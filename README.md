@@ -9,7 +9,7 @@ The main target is configuration files written and read by humans. By no means t
 1. YAML is probably the first widely known attempt to tackle the problem, but a very big specification ruins it. It's hard to implement a YAML parser over a weekend. If you use YAML, you most likely rely on existing parser and this is a problem on its own. Universal readable configuration format should be easy to write a parser for.
 2. Editing whitespace characters in YAML may lead to structural changes. That's a very bad idea. Same mistake in CSON. Using whitespace for structure works for small files and simple hierarchies, but as soon as you start editing files which occupy multiple editor screens, it starts to hurt.
 3. TOML is an attempt to formally specify .ini-like format. Sadly, the part with tables, arrays and arrays of tables is not readable at all.
-3. JSON is hard to edit, this is a known fact. Requires too much punctuation. Has no comments, which is important for config files. Some parsers allow trailing comma, some are not, it is not part of the specification. It's very easy to make by copy & pasting things.
+3. JSON is hard to edit, this is a known fact. Requires too much punctuation. Has no comments, which is important for config files. Some parsers allow trailing comma, some are not, it is not part of the specification. It's very easy to make trailing comma mistake by copy & pasting things.
 
 Out of frustration with existing formats here comes a need to find something simple, yet beautiful. Sx is an attempt to provide that. The main inspiration comes from lisp programming languages family of course. Yes, programming in lisp can be painful, but the same idea applied to data description seems to be working.
 
