@@ -62,9 +62,9 @@
 (env
     (LD_LIBRARY_PATH /usr/local/lib/myLib)
 )
-(constraints
+(constraints (
     (attribute OPERATOR value)
-)
+))
 (acceptableResourceRoles role1 *)
 (labels
     (environment staging)
