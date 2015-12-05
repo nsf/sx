@@ -3,10 +3,10 @@ package sx
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -263,6 +263,137 @@ type MarathonConfig struct {
 	UpgradeStrategy         *UpgradeStrategy  `sx:"upgradeStrategy"`
 }
 
+const expectedMarathonJson = `
+{
+  "Id": "/product/service/myApp",
+  "Cmd": "env \u0026\u0026 sleep 300",
+  "Args": [
+    "/bin/sh",
+    "-c",
+    "env \u0026\u0026 sleep 300"
+  ],
+  "CPUs": 1.5,
+  "Mem": 256,
+  "Ports": [
+    8080,
+    9000
+  ],
+  "RequirePorts": false,
+  "Instances": 3,
+  "Executor": "",
+  "Container": {
+    "Type": "DOCKER",
+    "Docker": {
+      "Image": "group/image",
+      "Network": "BRIDGE",
+      "PortMappings": [
+        {
+          "ContainerPort": 8080,
+          "HostPort": 0,
+          "ServicePort": 9000,
+          "Protocol": "tcp"
+        },
+        {
+          "ContainerPort": 161,
+          "HostPort": 0,
+          "ServicePort": 0,
+          "Protocol": "udp"
+        }
+      ],
+      "Privileged": false,
+      "Parameters": [
+        {
+          "Key": "a-docker-option",
+          "Value": "xxx"
+        },
+        {
+          "Key": "b-docker-option",
+          "Value": "yyy"
+        }
+      ]
+    },
+    "Volumes": [
+      {
+        "ContainerPath": "/etc/a",
+        "HostPath": "/var/data/a",
+        "Mode": "RO"
+      },
+      {
+        "ContainerPath": "/etc/b",
+        "HostPath": "/var/data/b",
+        "Mode": "RW"
+      }
+    ]
+  },
+  "Env": {
+    "LD_LIBRARY_PATH": "/usr/local/lib/myLib"
+  },
+  "Constraints": [
+    [
+      "attribute",
+      "OPERATOR",
+      "value"
+    ]
+  ],
+  "AcceptableResourceRoles": [
+    "role1",
+    "*"
+  ],
+  "Labels": {
+    "environment": "staging"
+  },
+  "Uris": [
+    "https://raw.github.com/mesosphere/marathon/master/README.md"
+  ],
+  "Dependencies": [
+    "/product/db/mongo",
+    "/product/db",
+    "../../db"
+  ],
+  "HealthChecks": [
+    {
+      "Protocol": "HTTP",
+      "Path": "/health",
+      "GracePeriodSeconds": 3,
+      "IntervalSeconds": 10,
+      "PortIndex": 0,
+      "TimeoutSeconds": 10,
+      "MaxConsecutiveFailures": 3,
+      "Command": null
+    },
+    {
+      "Protocol": "TCP",
+      "Path": "",
+      "GracePeriodSeconds": 3,
+      "IntervalSeconds": 5,
+      "PortIndex": 1,
+      "TimeoutSeconds": 5,
+      "MaxConsecutiveFailures": 3,
+      "Command": null
+    },
+    {
+      "Protocol": "COMMAND",
+      "Path": "",
+      "GracePeriodSeconds": 0,
+      "IntervalSeconds": 0,
+      "PortIndex": 0,
+      "TimeoutSeconds": 0,
+      "MaxConsecutiveFailures": 3,
+      "Command": {
+        "Value": "curl -f -X GET http://$HOST:$PORT0/health"
+      }
+    }
+  ],
+  "BackoffSeconds": 1,
+  "BackoffFactor": 1.15,
+  "MaxLaunchDelaySeconds": 3600,
+  "UpgradeStrategy": {
+    "MinimumHealthCapacity": 0.5,
+    "MaximumOverCapacity": 0.2
+  }
+}
+`
+
 func TestMarathonConfig(t *testing.T) {
 	data, err := ioutil.ReadFile("testdata/marathon.sx")
 	if err != nil {
@@ -270,5 +401,12 @@ func TestMarathonConfig(t *testing.T) {
 	}
 	var config MarathonConfig
 	err = Unmarshal(data, &config)
-	fmt.Println(prettyPrintAsJson(config))
+	if err != nil {
+		t.Fatal(err)
+	}
+	a := strings.TrimSpace(expectedMarathonJson)
+	b := strings.TrimSpace(prettyPrintAsJson(config))
+	if a != b {
+		t.Error("the result doesn't meet expectations")
+	}
 }
